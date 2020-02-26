@@ -1,0 +1,18 @@
+FROM python:3.7
+
+#RUN mkdir django_template_proj
+COPY . /opt/django_template_proj
+RUN apt-get update && \
+    apt-get full-upgrade -y --no-install-recommends && \
+    python3.7 -m pip install --no-cache-dir -r /opt/django_template_proj/requirements.txt && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+#    apt-get install supervisor -y --no-install-recommends && \
+
+WORKDIR /opt/django_template_proj
+
+CMD ["gunicorn", "django_template_proj.asgi:application"]
+
+ENV PYTHONUNBUFFERED=1 \
+    PORT=8000 \
+    WEB_CONCURRENCY=3

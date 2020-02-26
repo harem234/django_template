@@ -1,0 +1,77 @@
+version: '3.2'
+
+services:
+
+  db:
+    image: postgres:latest
+    restart: on-failure
+    hostname: db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=h@unter2@
+      - POSTGRES_DB=postgres
+
+    ports:
+      - 5432:5432
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    hostname: redis
+    ports:
+      - 6379:6379
+
+  rabbitmq:
+    image: rabbitmq:latest
+    hostname: rabbitmq
+    environment:
+      #      used in /usr/local/bin/init.sh
+      - RABBITMQ_USER=mahdi
+      - RABBITMQ_PASSWORD=mahdi
+      - RABBITMQ_VHOST=mahdi_vhost
+
+    volumes:
+      - ..\django_template_proj\.docker\rabbitmq\etc\:/etc/rabbitmq/:rw
+      #      - ..\django_template_proj\.docker\rabbitmq\data\:/var/lib/rabbitmq/:ro
+      - ..\django_template_proj\.docker\rabbitmq\logs\:/var/log/rabbitmq/:ro
+      - D:\Docker files\rabbitmq\init.sh:/usr/local/bin/init.sh:ro
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  celery:
+    image: web-py:latest
+    hostname: celery
+    environment:
+      - PYTHONPATH=/opt/django_template_proj
+    command: ["celery", "-A", "django_template_proj.celery", "worker", "--loglevel=info", "-Q mail"]
+    volumes:
+      - ./django_template_proj:/opt/django_template_proj
+#           supervisor
+#          /etc/supervisor/conf.d/django_template_proj.conf
+    depends_on:
+      - rabbitmq
+  #      - redis
+
+  web:
+    image: web-py:latest
+    hostname: web
+    env_file: .env
+    environment:
+      - PYTHONPATH=/opt/django_template_proj
+      - DJANGO_SETTINGS_MODULE=django_template_proj.settings
+      - OAUTHLIB_RELAX_TOKEN_SCOPE=True
+    command: ["python3", "./manage.py", "runserver", "0.0.0.0:8080",]
+    volumes:
+      - ./django_template_proj:/opt/django_template_proj
+    ports:
+      - 8000:8000
+      - 8080:8080
+    depends_on:
+      - db
+      - celery
+
+volumes:
+  pgdata:

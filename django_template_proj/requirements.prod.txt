@@ -1,0 +1,11 @@
+django
+djangorestframework
+requests
+google-auth-oauthlib
+psycopg2
+whitenoise[brotli]
+# gevent required for celery and gunicorn
+celery[redis]
+gunicorn[gevent]
+psycogreen
+django-db-geventpool

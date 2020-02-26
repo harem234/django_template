@@ -1,0 +1,102 @@
+version: '3.7'
+### build context ###
+# As the context of docker build command is the root (work dir ) of the project and
+# cant do any thing out of it (fobiden path error)
+
+services:
+  db:
+    #    image: postgres:latest
+    build:
+      context: ./db
+      dockerfile: ./Dockerfile
+    hostname: db
+    env_file:
+      - ./env/.env.db.prod
+    expose:
+      - 5432
+    # if there is data base in /var/lib/postgresql/data then init.sh files will not execute
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    hostname: redis
+    expose:
+      - 6379
+
+  rabbitmq:
+    #    image: django_template_rabbitmq:latest
+    build:
+      context: ./rabbitmq
+      dockerfile: ./Dockerfile
+    hostname: rabbitmq
+    env_file:
+      - ./env/.env.rabbitmq.prod
+    command: ['/usr/local/bin/init.sh']
+    expose:
+      - 5672
+    ports:
+      - 15672:15672
+
+  celery:
+    image: django_template_web:latest
+    #    build:
+    #      context: .
+    #      dockerfile: ./web/Dockerfile.prod
+    hostname: celery
+    env_file: ./env/.env.web.prod
+    volumes:
+      - ./django_template_proj:/opt/django_template_proj
+    entrypoint: []
+    #    '--uid=999', '--gid=999', -Q', 'mail,
+    command: ["celery", "-A", "django_template_proj.celery", "worker", '-n', 'worker1@%h', "--loglevel=info",
+              '-Q', 'celery',
+              '--concurrency=500', '-P', 'gevent']
+    depends_on:
+      - rabbitmq
+  #      - redis
+
+  web:
+    image: django_template_web:latest
+    #    build:
+    #      context: .
+    #      dockerfile: ./web/Dockerfile.prod
+    hostname: web
+    env_file: ./env/.env.web.prod
+    volumes:
+      - static_volume:/opt/django_template_proj/static
+      - media_volume:/opt/django_template_proj/media
+      - ./django_template_proj:/opt/django_template_proj
+    entrypoint: ["./entrypoint.sh"]
+    # running Nginx on a different host than Gunicorn you need to tell Gunicorn to trust the X-Forwarded-* headers sent by Nginx
+    # by the command: --forwarded-allow-ips="<ips>"
+    #    command: ["gunicorn","-w", "4", "--bind", "0.0.0.0:8000",
+    #              "--log-file", "-", "--log-level", "debug", '--forwarded-allow-ips="nginx"',
+    #              "django_template_proj.wsgi:application"]
+    command: ['gunicorn', '--config', 'python:django_template_proj.gunicorn_settings.conf','--log-level=debug',
+              'django_template_proj.wsgi:application']
+    expose:
+      - 8000
+      -
+    depends_on:
+      - db
+      - celery
+      - nginx
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    hostname: nginx
+    volumes:
+      - static_volume:/opt/static/django_template_proj
+      - media_volume:/opt/media/django_template_proj
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    #      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    ports:
+      - 8000:80
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
