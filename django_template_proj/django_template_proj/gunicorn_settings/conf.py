@@ -14,7 +14,7 @@ threads = multiprocessing.cpu_count() * 2 + 1
 # ips = socket.gethostbyname('nginx')
 # forwarded_allow_ips = ips
 log_level = 'debug'
-# log_file = '-'
+log_file = '-'
 
 chdir = '/opt/django_template_proj/django_template_proj'
 

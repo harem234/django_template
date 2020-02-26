@@ -31,5 +31,6 @@ RUN apt-get update && \
 #USER web
 # "--bind", "0.0.0.0:8000",
 
+# HEROKU: have issue with entrypoint when uning heroku.yml
 #ENTRYPOINT ["/bin/sh", "-c", "./entrypoint.sh"]
 CMD ["gunicorn", "django_template_proj.wsgi:application", "--preload", '--timeout 10', '--max-requests', '1200', '--log-file', '-']
