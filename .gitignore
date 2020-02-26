@@ -114,6 +114,7 @@ venv.bak/
 ### Django ###
 *.pyc
 
+django_template_proj/django_template_proj/settings_dev.py
 ### Google client file ###
 django_template_proj/google_api/client_secret.json
 
