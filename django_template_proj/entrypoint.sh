@@ -2,6 +2,7 @@
 
 set -e
 #python3 is_service_up.py && \
+echo "entry point ###############################################################################################" && \
 python3 manage.py collectstatic --noinput --clear && \
 python3 manage.py migrate && \
 
