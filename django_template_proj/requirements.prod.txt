@@ -9,3 +9,6 @@ celery[redis]
 gunicorn[gevent]
 psycogreen
 django-db-geventpool
+
+# heroku
+django-heroku
