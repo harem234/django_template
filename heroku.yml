@@ -11,5 +11,5 @@ run:
 #  gunicorn django_template_proj.wsgi:application --bind 0.0.0.0:$PORT --preload --timeout 10 --max-requests 1200 --log-file -
   celey:
     command:
-      - celery -A django_template_proj.celery worker -n worker1@%h --loglevel=info -Q celery --concurrency=500 -P gevent
+      - celery -A django_template_proj.celery worker -n worker1@%h --loglevel=info -Q celery --concurrency=3 -P gevent
     image: web

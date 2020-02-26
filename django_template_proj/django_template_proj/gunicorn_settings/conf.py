@@ -8,9 +8,14 @@ bind = ['0.0.0.0:8000']
 # errorlog = "/opt/django_template_proj/django_template_proj/gunicorn_settings/logs/gunicorn-error.log"
 
 # one worker per CPU core, “ — workers 4” command line argument
-workers = multiprocessing.cpu_count() * 2 + 1
-threads = multiprocessing.cpu_count() * 2 + 1
-
+# workers = multiprocessing.cpu_count() * 2 + 1
+# threads = multiprocessing.cpu_count() * 2 + 1
+workers = 1
+threads = 7
+# help limit the effects of the memory leak
+timeout = 10
+max_requests = 1200
+preload = True
 # ips = socket.gethostbyname('nginx')
 # forwarded_allow_ips = ips
 log_level = 'debug'
@@ -18,11 +23,7 @@ log_file = '-'
 
 chdir = '/opt/django_template_proj/django_template_proj'
 
-preload = True
-timeout = 10
 
-# help limit the effects of the memory leak
-max_requests = 1200
 
 # import psycogreen    # use this if you use gevent workers
 #
