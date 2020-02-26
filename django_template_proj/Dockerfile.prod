@@ -29,8 +29,7 @@ RUN apt-get update && \
 
 # change to the app user
 #USER web
+# "--bind", "0.0.0.0:8000",
 
 ENTRYPOINT ["/bin/sh", "-c", "./entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "django_template_proj.wsgi:application",
- '--preload', '--timeout 10', '--max-requests', '1200',
- '--log-file', '-']
+CMD ["gunicorn", "django_template_proj.wsgi:application", "--preload", '--timeout 10', '--max-requests', '1200', '--log-file', '-']
