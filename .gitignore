@@ -115,7 +115,7 @@ venv.bak/
 *.pyc
 
 ### Google client file ###
-./django_template_proj/google_api/client_secret.json
+django_template_proj/google_api/client_secret.json
 
 ### Docker-compose env files ###
 /web/.env.rabbitmq.prod
