@@ -21,6 +21,8 @@ RUN apt-get update && \
     python3.7 -m pip install --no-cache-dir -r /opt/django_template_proj/requirements.prod.txt && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* && \
+    chmod +x entrypoint.sh
+
 #    useradd --system  -b /bin/bash web && \
 #    chown -R web /opt/django_template_proj
 # chown all the files to the app user
