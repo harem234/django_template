@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-python3 is_service_up.py && \
+#python3 is_service_up.py && \
 python3 manage.py collectstatic --noinput --clear && \
 python3 manage.py migrate && \
 
