@@ -2,5 +2,9 @@ build:
   docker:
     web: ./django_template_proj/Dockerfile.prod
 # if no run, CMD specified in the Dockerfile will called
-#run:
-#  web: bundle exec puma -C config/puma.rb
+  run:
+    web: gunicorn django_template_proj.wsgi:application --bind 0.0.0.0:$PORT --preload --timeout 10 --max-requests 1200 --log-file -
+  release:
+    image: web
+    command:
+      - python manage.py collectstatic --noinput
