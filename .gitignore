@@ -109,7 +109,7 @@ venv.bak/
 .idea/
 
 # vscode
-./django_template_proj/.vscode/
+.vscode
 
 ### Django ###
 *.pyc
