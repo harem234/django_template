@@ -1,6 +1,6 @@
 build:
   docker:
-    web: ../web/Dockerfile.prod
+    web: ./web/Dockerfile.prod
 # if no run, CMD specified in the Dockerfile will called
-run:
-  web: bundle exec puma -C config/puma.rb
+#run:
+#  web: bundle exec puma -C config/puma.rb
