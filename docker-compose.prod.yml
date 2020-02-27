@@ -73,11 +73,11 @@ services:
     #    command: ["gunicorn","-w", "4", "--bind", "0.0.0.0:8000",
     #              "--log-file", "-", "--log-level", "debug", '--forwarded-allow-ips="nginx"',
     #              "django_template_proj.wsgi:application"]
+    #    '--log-level=debug', --log-file=-
     command: ['gunicorn', '--config', 'python:django_template_proj.gunicorn_settings.conf','--log-level=debug',
               'django_template_proj.wsgi:application']
     expose:
       - 8000
-      -
     depends_on:
       - db
       - celery

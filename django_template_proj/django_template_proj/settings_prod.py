@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-import django_heroku
+# import django_heroku
 import os
 
 jj = os.path.join
@@ -263,24 +263,80 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 ## Logging configuration
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file_DEBUG': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'debug.log'),
+#         },
+#         'file_INFO': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'info.log'),
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file_DEBUG'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#         'django.request': {
+#             'handlers': ['file_INFO'],
+#             'level': 'INFO',
+#             'propagate': True,
+#         },
+#     },
+# }
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(levelname)s [%(name)s:%(lineno)s] %(module)s %(process)d %(thread)d %(message)s'
+        }
+    },
     'handlers': {
-        'file': {
+        # 'gunicorn_file_debug': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'formatter': 'verbose',
+        #     'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'gunicorn.debug.log'),
+        #     'maxBytes': 1024 * 1024 * 100,  # 100 mb
+        # },
+        'file_debug': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'debug.log'),
+        },
+        'file_info': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'info.log'),
         },
     },
     'loggers': {
+        # 'gunicorn.errors': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['gunicorn_file_debug'],
+        #     'propagate': True,
+        # },
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file_debug'],
             'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['file_info'],
+            'level': 'INFO',
             'propagate': True,
         },
     },
 }
 
 # Activate Django-Heroku.
-django_heroku.settings(locals())
+# django_heroku.settings(locals())

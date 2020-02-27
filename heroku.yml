@@ -7,9 +7,9 @@ release:
   command:
     - python manage.py collectstatic --noinput && python manage.py migrate
 run:
-  web: gunicorn django_template_proj.wsgi:application --bind 0.0.0.0:$PORT --config python:django_template_proj.gunicorn_settings.conf
+  web: gunicorn django_template_proj.wsgi:application --bind 0.0.0.0:$PORT --log-level=debug --config python:django_template_proj.gunicorn_settings.conf
 #  gunicorn django_template_proj.wsgi:application --bind 0.0.0.0:$PORT --preload --timeout 10 --max-requests 1200 --log-file -
   celey:
     command:
-      - celery -A django_template_proj.celery worker -n worker1@%h --loglevel=info -Q celery --concurrency=3 -P gevent
+      - celery -A django_template_proj.celery worker -n worker1@%h --loglevel=info -Q celery --concurrency=5 -P gevent
     image: web
