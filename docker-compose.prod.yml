@@ -76,6 +76,7 @@ services:
     #    '--log-level=debug', --log-file=-
     command: ['gunicorn', '--config', 'python:django_template_proj.gunicorn_settings.conf','--log-level=debug',
               'django_template_proj.wsgi:application']
+#    command: python manage.py runserver 0.0.0.0:8000
     expose:
       - 8000
     depends_on:

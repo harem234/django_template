@@ -291,6 +291,7 @@ SESSION_COOKIE_SECURE = True
 #         },
 #     },
 # }
+from django.utils.log import DEFAULT_LOGGING
 
 LOGGING = {
     'version': 1,
@@ -298,7 +299,14 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'format': '%(asctime)s %(levelname)s [%(name)s:%(lineno)s] %(module)s %(process)d %(thread)d %(message)s'
-        }
+        },
+        'django.server': {
+            '()': 'django.utils.log.ServerFormatter',
+            'format': '[{server_time}] {message}',
+            'style': '{',
+        },
+        # 'django.server': DEFAULT_LOGGING['formatters']['django.server'],
+
     },
     'handlers': {
         # 'gunicorn_file_debug': {
@@ -308,16 +316,27 @@ LOGGING = {
         #     'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'gunicorn.debug.log'),
         #     'maxBytes': 1024 * 1024 * 100,  # 100 mb
         # },
-        'file_debug': {
+        'django': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'django.log'),
+            # TimedRotatingFileHandler: Rotate log file daily, only keep 1 backup
+            'when': 'd',
+            'interval': 1,
+            'backupCount': 1,
+        },
+        'django.request': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'debug.log'),
+            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'django.request.log'),
         },
-        'file_info': {
+        'django.server': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'info.log'),
-        },
+            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'django.server.log'),
+            'formatter': 'django.server',
+        }
+        # 'django.server': DEFAULT_LOGGING['handlers']['django.server'],
     },
     'loggers': {
         # 'gunicorn.errors': {
@@ -326,17 +345,24 @@ LOGGING = {
         #     'propagate': True,
         # },
         'django': {
-            'handlers': ['file_debug'],
+            'handlers': ['django'],
             'level': 'DEBUG',
             'propagate': True,
         },
         'django.request': {
-            'handlers': ['file_info'],
-            'level': 'INFO',
-            'propagate': True,
+            'handlers': ['django.request'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
+        'django.server': {
+            'handlers': ['django.server'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        # 'django.server': DEFAULT_LOGGING['loggers']['django.server'],
     },
 }
 
 # Activate Django-Heroku.
-django_heroku.settings(locals())
+# logging=False :: do not over write my logging in this setting
+django_heroku.settings(locals(), logging=False)
