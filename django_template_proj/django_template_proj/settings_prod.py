@@ -15,7 +15,7 @@ import os
 jj = os.path.join
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+LOGS_DIR = os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'logs')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -243,63 +243,43 @@ CELERY_TIMEZONE = 'Asia/Tehran'
 # both gevent/eventlet are base on greenlet (also known as green threads)
 # CELERY_POOL = 'gevent'
 
+CELERYD_TASK_SOFT_TIME_LIMIT = 12
+CELERYD_TASK_TIME_LIMIT = 24
 # celery -A django_template_proj.celery worker -n worker2@%h --loglevel=info -Q mail -P gevent
-# CELERY_TASK_QUEUES = {
-#     'mail': {
-#         'exchange': 'mail',
-#         'routing_key': 'mail',
-#     },
-# }
-# celery  routing and queues ,,,,django_template_proj.user.tasks.,,,
-# CELERY_TASK_ROUTES  = {
-#     'user.tasks.*': {
-#         'queue': 'mail',
-#         # 'routing_key': 'mail',
-#         # 'exchange': 'mail',
-#     }
-# }
+CELERY_TASK_QUEUES = {
+    'mailing': {
+        'exchange': 'mailing',
+        'routing_key': 'mailing',
+    },
+}
+
+# celery  routing and queues
+CELERY_TASK_ROUTES = {
+    'user.tasks._send_mail': {
+        'queue': 'mailing',
+        'routing_key': 'mailing',
+        'exchange': 'mailing',
+    }
+}
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
-## Logging configuration
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'file_DEBUG': {
-#             'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'debug.log'),
-#         },
-#         'file_INFO': {
-#             'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'info.log'),
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file_DEBUG'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#         'django.request': {
-#             'handlers': ['file_INFO'],
-#             'level': 'INFO',
-#             'propagate': True,
-#         },
-#     },
-# }
-from django.utils.log import DEFAULT_LOGGING
+# from django.utils.log import DEFAULT_LOGGING
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '%(asctime)s %(levelname)s [%(name)s:%(lineno)s] %(module)s %(process)d %(thread)d %(message)s'
+        'simple': {
+            'format': '%(levelname)s %(message)s',
         },
+
+        'verbose': {
+            'format': '%(asctime)s %(levelname)s [%(name)s:%(lineno)s] %(module)s %(process)d %(thread)d %(message)s',
+            'datefmt': "%Y/%m/%d %H:%M:%S"
+        },
+
         'django.server': {
             '()': 'django.utils.log.ServerFormatter',
             'format': '[{server_time}] {message}',
@@ -316,10 +296,15 @@ LOGGING = {
         #     'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'gunicorn.debug.log'),
         #     'maxBytes': 1024 * 1024 * 100,  # 100 mb
         # },
+        'default': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
         'django': {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'django.log'),
+            'filename': os.path.join(LOGS_DIR, 'django.log'),
             # TimedRotatingFileHandler: Rotate log file daily, only keep 1 backup
             'when': 'd',
             'interval': 1,
@@ -328,14 +313,30 @@ LOGGING = {
         'django.request': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'django.request.log'),
+            'filename': os.path.join(LOGS_DIR, 'django.request.log'),
         },
         'django.server': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(os.path.join(BASE_DIR, 'django_template_proj'), 'django.server.log'),
+            'filename': os.path.join(LOGS_DIR, 'django.server.log'),
             'formatter': 'django.server',
-        }
+        },
+        # duo to sensitive data must be used with high security with package: Sentry
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,  # like DEBUG=True html
+            # overrides settings.EMAIL_BACKEND
+            'email_backend': 'django.core.mail.backends.filebased.EmailBackend',
+        },
+        'celery': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'celery.log'),
+            'formatter': 'verbose',
+            'maxBytes': 1024 * 1024 * 100,  # 100 mb
+        },
+
         # 'django.server': DEFAULT_LOGGING['handlers']['django.server'],
     },
     'loggers': {
@@ -352,12 +353,17 @@ LOGGING = {
         'django.request': {
             'handlers': ['django.request'],
             'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         },
+        # manage.py runserver
         'django.server': {
             'handlers': ['django.server'],
             'level': 'DEBUG',
             'propagate': False,
+        },
+        'celery': {
+            'handlers': ['celery', 'default'],
+            'level': 'DEBUG',
         },
         # 'django.server': DEFAULT_LOGGING['loggers']['django.server'],
     },

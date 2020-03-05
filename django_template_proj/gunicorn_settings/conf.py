@@ -4,8 +4,8 @@ import multiprocessing
 
 bind = ['0.0.0.0:8000']
 
-# accesslog = "/opt/django_template_proj/django_template_proj/gunicorn_settings/logs/gunicorn-access.log"
-# errorlog = "/opt/django_template_proj/django_template_proj/gunicorn_settings/logs/gunicorn-error.log"
+# accesslog = "/opt/django_template_proj/gunicorn_settings/logs/gunicorn-access.log"
+# errorlog = "/opt/django_template_proj/gunicorn_settings/logs/gunicorn-error.log"
 
 # one worker per CPU core, “ — workers 4” command line argument
 # workers = multiprocessing.cpu_count() * 2 + 1
@@ -16,20 +16,15 @@ threads = 7
 timeout = 10
 max_requests = 1200
 preload = True
+
+# running Nginx on a different host than Gunicorn you need to tell Gunicorn to trust the X-Forwarded-* headers sent by Nginx
+# by the command: --forwarded-allow-ips="<ips>"
 # ips = socket.gethostbyname('nginx')
 # forwarded_allow_ips = ips
 log_level = 'debug'
 log_file = '-'
 
 chdir = '/opt/django_template_proj/django_template_proj'
-
-
-
-# import psycogreen    # use this if you use gevent workers
-#
-# def post_fork(server, worker):
-#     patch_psycopg()
-#     worker.log.info("Made Psycopg2 Green")
 
 # gevent and postgres: psycogreen in addition to psycopg2
 # gevent and mysql: PyMySQL instead of mysqlclient

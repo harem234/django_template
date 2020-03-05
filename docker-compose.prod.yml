@@ -1,7 +1,7 @@
 version: '3.7'
 ### build context ###
 # As the context of docker build command is the root (work dir ) of the project and
-# cant do any thing out of it (fobiden path error)
+# can not do any thing out of it (forbidden path error)
 
 services:
   db:
@@ -48,10 +48,10 @@ services:
     volumes:
       - ./django_template_proj:/opt/django_template_proj
     entrypoint: []
-    #    '--uid=999', '--gid=999', -Q', 'mail,
-    command: ["celery", "-A", "django_template_proj.celery", "worker", '-n', 'worker1@%h', "--loglevel=info",
-              '-Q', 'celery',
-              '--concurrency=500', '-P', 'gevent']
+    #    '--uid=999', '--gid=999',
+    command: ["celery", "-A", "django_template_proj.celery_app", "worker", '-n', 'worker1@%h', "--loglevel=debug",
+              '-Q', 'celery,mailing',
+              '--concurrency=300', '-P', 'gevent']
     depends_on:
       - rabbitmq
   #      - redis
@@ -68,21 +68,20 @@ services:
       - media_volume:/opt/django_template_proj/media
       - ./django_template_proj:/opt/django_template_proj
     entrypoint: ["./entrypoint.sh"]
-    # running Nginx on a different host than Gunicorn you need to tell Gunicorn to trust the X-Forwarded-* headers sent by Nginx
-    # by the command: --forwarded-allow-ips="<ips>"
+
     #    command: ["gunicorn","-w", "4", "--bind", "0.0.0.0:8000",
     #              "--log-file", "-", "--log-level", "debug", '--forwarded-allow-ips="nginx"',
     #              "django_template_proj.wsgi:application"]
     #    '--log-level=debug', --log-file=-
-    command: ['gunicorn', '--config', 'python:django_template_proj.gunicorn_settings.conf','--log-level=debug',
+    command: ['gunicorn', '--config', 'python:gunicorn_settings.conf','--log-level=debug',
               'django_template_proj.wsgi:application']
-#    command: python manage.py runserver 0.0.0.0:8000
+    #    command: python manage.py runserver 0.0.0.0:8000
     expose:
       - 8000
     depends_on:
       - db
       - celery
-      - nginx
+  #      - nginx
 
   nginx:
     build:
